@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Metalurgia y medio ambiente: juegos, calculadora de CO₂ y el futuro del acero verde.">
+<title>Acero Verde</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: portada de bosque; luego "juegos" en tarjetas grandes sobre fondo claro, separados por ondas de colinas; el naranja es siempre "contaminante" y el verde "limpio" */
+:root {
+  --bg: #f3f6ef;
+  --surface: #ffffff;
+  --fg: #16231b;
+  --muted: #56665b;
+  --line: #d5ddd1;
+  --forest: #12372a;
+  --forest-2: #1d4a33;
+  --forest-fg: #eaf3ea;
+  --leaf: #2f8f55;
+  --leaf-soft: #dcf0e1;
+  --mint: #8fe0a9;
+  --moss: #e7eedd;
+  --sky: #d8ecf3;
+  --sea: #2c7fa3;
+  --molten: #d9780b;
+  --molten-soft: #fbe8d0;
+  --rust: #a5481c;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1612; --surface: #17211b; --fg: #e4eee6; --muted: #9aab9f; --line: #27362c;
+    --forest: #0a1f17; --forest-2: #12301f; --forest-fg: #e4eee6; --leaf: #5cc584; --leaf-soft: #163323;
+    --mint: #8fe0a9; --moss: #131d17; --sky: #12262e; --sea: #5bb3d6;
+    --molten: #f29a35; --molten-soft: #36230f; --rust: #e0703a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1612; --surface: #17211b; --fg: #e4eee6; --muted: #9aab9f; --line: #27362c;
+  --forest: #0a1f17; --forest-2: #12301f; --forest-fg: #e4eee6; --leaf: #5cc584; --leaf-soft: #163323;
+  --mint: #8fe0a9; --moss: #131d17; --sky: #12262e; --sea: #5bb3d6;
+  --molten: #f29a35; --molten-soft: #36230f; --rust: #e0703a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 1.0625rem; line-height: 1.55; }
+.wrap {
+  max-width: 66rem; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: var(--display); line-height: 1.02; text-wrap: balance; margin: 0; letter-spacing: -0.02em; }
+p { margin: 0; }
+a { color: inherit; text-decoration-color: var(--leaf); text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--leaf); outline-offset: 2px; }
+button { font-family: var(--body); }
+.eyebrow { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.eq {
+  font-family: var(--mono); font-size: 0.9rem; background: var(--bg); border: 1px solid var(--line);
+  border-radius: 6px; padding: 0.3rem 0.6rem; display: inline-block; max-width: 100%; overflow-x: auto; white-space: nowrap;
+}
+.leaf-ico { width: 1em; height: 1em; vertical-align: -0.12em; flex: none; }
+
+/* PORTADA */
+.hero { position: relative; overflow: hidden; background: linear-gradient(170deg, #0b281d 0%, #12372a 55%, #1d4a33 100%); color: #eaf3ea; }
+.hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.hero .wrap { position: relative; z-index: 1; padding-block: 3.6rem 2rem; display: grid; gap: 1.6rem; }
+.hero .eyebrow { color: #a8c7b2; }
+.hero h1 { font-size: clamp(2.8rem, 9.5vw, 6.2rem); font-weight: 800; }
+.hero h1 em { font-style: normal; color: #8fe0a9; }
+.hero .lede { max-width: 34rem; font-size: 1.15rem; color: #cfe2d4; }
+.bubbles { display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr)); }
+.bubble { background: rgba(255,255,255,0.06); border: 1px solid rgba(168,199,178,0.25); border-radius: 18px 18px 18px 4px; padding: 0.9rem 1rem; display: grid; gap: 0.2rem; }
+.bubble b { font-family: var(--display); font-size: 2.1rem; font-weight: 800; line-height: 1; color: #8fe0a9; }
+.bubble b.hot { color: #f6a54a; }
+.bubble span { font-size: 0.92rem; color: #cfe2d4; }
+.hero-nav { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.hero-nav a { text-decoration: none; font-size: 0.9rem; font-weight: 600; padding: 0.45rem 0.9rem; border-radius: 999px; border: 1px solid rgba(168,199,178,0.4); color: #eaf3ea; }
+.hero-nav a:hover { background: rgba(143,224,169,0.15); }
+.hero-nav a.cta { background: #8fe0a9; color: #0b281d; border-color: #8fe0a9; }
+.hills { display: block; width: 100%; height: 56px; }
+.hills .h1 { fill: var(--forest-2); }
+.hills .h2 { fill: var(--bg); }
+
+/* SECCIONES-JUEGO */
+section.game { padding-block: 2.6rem; }
+.game-head { display: grid; gap: 0.5rem; margin-bottom: 1.3rem; max-width: 40rem; }
+.game-head h2 { font-size: clamp(1.9rem, 5.5vw, 2.8rem); font-weight: 800; }
+.game-head p { color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: clamp(1rem, 3vw, 1.6rem); }
+.split { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); align-items: start; }
+.split > * { min-width: 0; }
+.green-tip { display: flex; gap: 0.6rem; align-items: flex-start; background: var(--leaf-soft); border-radius: 12px; padding: 0.75rem 0.9rem; font-size: 0.95rem; }
+.green-tip svg { color: var(--leaf); width: 18px; height: 18px; margin-top: 0.15rem; }
+.pill-row { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.pill {
+  border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 999px;
+  padding: 0.5rem 0.95rem; font-size: 0.93rem; font-weight: 600; cursor: pointer;
+}
+.pill:hover { border-color: var(--leaf); }
+.pill[aria-pressed="true"] { background: var(--leaf); border-color: var(--leaf); color: #fff; }
+.pill.hot[aria-pressed="true"] { background: var(--molten); border-color: var(--molten); color: #1d1206; }
+.meter { display: grid; gap: 0.25rem; }
+.meter .top { display: flex; justify-content: space-between; font-size: 0.88rem; color: var(--muted); }
+.meter .bar { height: 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 99px; overflow: hidden; }
+.meter .bar i { display: block; height: 100%; background: var(--leaf); border-radius: 99px; transition: width 450ms ease; }
+.meter.hard .bar i { background: var(--molten); }
+.big-label { font-family: var(--display); font-size: clamp(1.8rem, 5vw, 2.4rem); font-weight: 800; line-height: 1.05; }
+
+/* 1. VIAJE */
+.steps { display: flex; gap: 0.45rem; overflow-x: auto; padding-bottom: 0.4rem; margin-bottom: 1rem; scrollbar-width: thin; }
+.step-btn {
+  flex: none; display: grid; gap: 0.1rem; text-align: left; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 14px; padding: 0.55rem 0.85rem; min-width: 8.5rem;
+}
+.step-btn small { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
+.step-btn b { font-size: 0.97rem; }
+.step-btn[aria-selected="true"] { background: var(--forest); color: var(--forest-fg); border-color: var(--forest); }
+.step-btn[aria-selected="true"] small { color: #a8c7b2; }
+.step-panel { display: grid; gap: 1rem; }
+.step-panel h3 { font-size: clamp(1.6rem, 4.5vw, 2.2rem); font-weight: 800; }
+.step-panel .who { font-size: 0.85rem; color: var(--muted); }
+.fun { display: flex; gap: 0.6rem; align-items: flex-start; background: var(--molten-soft); border-radius: 12px; padding: 0.75rem 0.9rem; font-size: 0.95rem; }
+.fun b { color: var(--molten); white-space: nowrap; }
+
+/* 2. ALTO HORNO */
+.furnace-wrap { display: grid; gap: 1.4rem; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: start; }
+@media (max-width: 760px) { .furnace-wrap { grid-template-columns: minmax(0, 1fr); } }
+.furnace-svg { width: 100%; max-width: 340px; height: auto; display: block; margin: 0 auto; }
+.zone { cursor: pointer; transition: opacity 250ms, stroke-width 250ms; stroke: var(--surface); stroke-width: 2; }
+.zone:hover { opacity: 0.85; }
+.zone.on { stroke: var(--fg); stroke-width: 3; }
+.zone-txt { font-family: var(--mono); font-size: 11px; fill: #ffffff; pointer-events: none; }
+.furnace-shell { fill: none; stroke: var(--muted); stroke-width: 3; }
+.smoke circle { transition: fill 500ms; }
+.smoke-label { font-family: var(--mono); font-size: 12px; font-weight: 500; }
+.zone-info { display: grid; gap: 0.7rem; }
+.zone-info .temp { font-family: var(--display); font-weight: 800; font-size: 2.2rem; color: var(--molten); line-height: 1; }
+.eq-list { display: grid; gap: 0.35rem; }
+.reductor { display: grid; gap: 0.6rem; margin-top: 0.4rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.co2bar { display: grid; gap: 0.3rem; }
+.co2bar .track { height: 16px; border-radius: 4px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; }
+.co2bar .track i { display: block; height: 100%; transition: width 600ms ease, background 400ms; }
+.co2bar .v { font-family: var(--mono); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+
+/* 3. CARBONO */
+.slider-box { display: grid; gap: 0.6rem; }
+input[type="range"] { width: 100%; accent-color: var(--leaf); }
+.c-value { font-family: var(--display); font-size: 3rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.c-scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+.uses { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.uses span { background: var(--moss); border-radius: 8px; padding: 0.25rem 0.6rem; font-size: 0.9rem; }
+.warn { color: var(--rust); font-weight: 600; }
+
+/* 4. MICROESTRUCTURAS */
+.micro { width: 100%; aspect-ratio: 1; max-width: 260px; border-radius: 50%; border: 6px solid var(--line); margin: 0 auto; transition: background 500ms; position: relative; overflow: hidden; }
+.micro-cap { text-align: center; font-family: var(--mono); font-size: 0.75rem; color: var(--muted); margin-top: 0.4rem; }
+
+/* 5. BARCO */
+.ship-svg { width: 100%; height: auto; display: block; border-radius: 14px; }
+.ship-svg .sky { fill: var(--sky); }
+.ship-svg .water { fill: var(--sea); opacity: 0.85; }
+.ship-svg .hull { fill: #6f7b80; }
+.ship-svg .deck { fill: #c9d1d3; }
+.ship-svg .zinc { fill: #b9c4c9; stroke: #ffffff; stroke-width: 1.5; transition: width 500ms, opacity 500ms; }
+.ship-svg .rust { fill: var(--rust); transition: opacity 500ms; }
+.ship-svg .bubble-e { fill: #ffffff; opacity: 0.8; }
+.ship-controls { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.btn {
+  font: 700 0.95rem var(--body); border-radius: 999px; padding: 0.6rem 1.15rem; cursor: pointer;
+  border: 1px solid var(--leaf); background: var(--leaf); color: #ffffff;
+}
+.btn.ghost { background: transparent; color: var(--leaf); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.years { font-family: var(--mono); font-size: 0.95rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ship-msg { min-height: 3em; }
+
+/* 6. CALCULADORA */
+.calc-bg { background: var(--moss); }
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 36rem; }
+th { text-align: left; font-family: var(--mono); font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 0 0.45rem 0.55rem; }
+td { padding: 0.4rem 0.45rem; border-top: 1px solid var(--line); vertical-align: middle; }
+th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 0.93rem; }
+td.saving { color: var(--leaf); }
+.tool input, .tool select {
+  font: inherit; font-size: 0.95rem; color: var(--fg); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 0.42rem 0.55rem; width: 100%;
+}
+.tool input[type="number"] { text-align: right; font-variant-numeric: tabular-nums; }
+.kg { display: flex; align-items: center; gap: 0.35rem; }
+.kg span { color: var(--muted); font-size: 0.88rem; }
+.del { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 1.25rem; line-height: 1; padding: 0.3rem 0.5rem; border-radius: 6px; }
+.del:hover { color: var(--rust); background: var(--molten-soft); }
+.tool { display: grid; gap: 1.2rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+.totals { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+.total { display: grid; gap: 0.1rem; }
+.total .v { font-family: var(--display); font-weight: 800; font-size: clamp(2.1rem, 6.5vw, 3rem); line-height: 1; font-variant-numeric: tabular-nums; }
+.total.now .v { color: var(--molten); }
+.total.grn .v { color: var(--leaf); }
+.total .l { font-size: 0.9rem; color: var(--muted); }
+.trees { font-size: 0.97rem; }
+.factors { font-size: 0.88rem; color: var(--muted); }
+.factors summary { cursor: pointer; font-weight: 600; color: var(--fg); }
+.factors table { min-width: 28rem; margin-top: 0.6rem; }
+
+/* 7. FUTURO */
+.future { background: var(--forest); color: var(--forest-fg); padding-block: 2.6rem 3rem; }
+.future .game-head p { color: #cfe2d4; }
+.future .eyebrow { color: #a8c7b2; }
+.flow { display: grid; gap: 0.6rem; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)); margin-bottom: 1.6rem; counter-reset: f; }
+.flow div { border: 1px solid rgba(168,199,178,0.3); border-radius: 14px; padding: 0.85rem; display: grid; gap: 0.3rem; background: rgba(255,255,255,0.04); }
+.flow div::before { counter-increment: f; content: counter(f); font-family: var(--display); font-weight: 800; font-size: 1.6rem; color: #8fe0a9; line-height: 1; }
+.flow p { font-size: 0.93rem; color: #d6e7da; }
+.fgrid { display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fit, minmax(14.5rem, 1fr)); }
+.fcard { border-radius: 16px; padding: 1.1rem; display: grid; gap: 0.45rem; align-content: start; background: rgba(143,224,169,0.08); }
+.fcard h3 { font-size: 1.3rem; font-weight: 700; color: #8fe0a9; }
+.fcard p { color: #d6e7da; font-size: 0.95rem; }
+.fcard .tag { font-family: var(--mono); font-size: 0.7rem; color: #a8c7b2; text-transform: uppercase; letter-spacing: 0.08em; }
+.spain { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.6rem; align-items: center; }
+.spain span { border: 1px solid rgba(168,199,178,0.35); border-radius: 999px; padding: 0.35rem 0.8rem; font-size: 0.9rem; }
+.spain .eyebrow { margin-right: 0.3rem; }
+
+/* 8. QUIZ */
+.quiz { display: grid; gap: 1rem; }
+.q-prog { display: flex; gap: 0.35rem; }
+.q-prog i { flex: 1; height: 6px; border-radius: 99px; background: var(--line); }
+.q-prog i.ok { background: var(--leaf); }
+.q-prog i.ko { background: var(--molten); }
+.q-prog i.cur { background: var(--fg); }
+.q-text { font-family: var(--display); font-size: clamp(1.4rem, 4vw, 1.9rem); font-weight: 700; }
+.q-opts { display: grid; gap: 0.5rem; }
+.q-opt { text-align: left; border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 12px; padding: 0.75rem 0.95rem; font-size: 1rem; font-weight: 600; cursor: pointer; }
+.q-opt:hover:not(:disabled) { border-color: var(--leaf); }
+.q-opt.right { background: var(--leaf-soft); border-color: var(--leaf); }
+.q-opt.wrong { background: var(--molten-soft); border-color: var(--molten); }
+.q-opt:disabled { cursor: default; }
+.q-why { font-size: 0.95rem; color: var(--muted); min-height: 1.5em; }
+.q-score { font-family: var(--display); font-size: 3rem; font-weight: 800; color: var(--leaf); line-height: 1; }
+
+/* FUENTES Y PIE */
+.sources-sec { padding-block: 2.4rem; }
+.sources-sec h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.9rem; }
+.sources { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; font-size: 0.9rem; max-width: 46rem; }
+footer { background: var(--forest); color: var(--forest-fg); }
+footer .wrap { padding-block: 1.8rem; display: grid; gap: 0.4rem; font-size: 0.9rem; }
+footer .eyebrow { color: #a8c7b2; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="leaf" viewBox="0 0 16 16"><path d="M14 2C7 2 2 5 2 11c0 1 .2 2 .5 3 .7-3 3-6 7-8-3 2.6-4.6 5-5 8 7 0 9.5-5 9.5-12z" fill="currentColor"/></symbol>
+</svg>
+
+<header class="hero">
+  <canvas id="leaves" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <p class="eyebrow">Metalurgia · Ingeniería en Tecnologías Industriales · UDC</p>
+    <h1>Metales para un<br><em>planeta habitable</em></h1>
+    <p class="lede">Cómo se hace el acero, cuánto contamina y cómo lo vamos a fabricar sin ensuciar el aire. Toca, prueba y juega.</p>
+    <div class="bubbles">
+      <div class="bubble"><b class="hot">8 %</b><span>del CO₂ que emitimos los humanos viene del acero</span></div>
+      <div class="bubble"><b>95 %</b><span>del metal que se produce en el mundo es hierro</span></div>
+      <div class="bubble"><b>1800 → &lt;100</b><span>kg de CO₂ por tonelada al cambiar coque por hidrógeno verde</span></div>
+    </div>
+    <nav class="hero-nav" aria-label="Secciones">
+      <a href="#horno" class="cta">Empieza por el horno</a>
+      <a href="#calculadora">Calculadora de CO₂</a>
+      <a href="#futuro">El futuro</a>
+      <a href="#quiz">Quiz</a>
+    </nav>
+  </div>
+  <svg class="hills" viewBox="0 0 1200 56" preserveAspectRatio="none" aria-hidden="true">
+    <path class="h1" d="M0 30 C150 10 300 44 450 26 C600 8 750 40 900 22 C1020 8 1110 30 1200 18 L1200 56 L0 56 Z"/>
+    <path class="h2" d="M0 44 C200 26 380 56 600 40 C800 26 1000 54 1200 36 L1200 56 L0 56 Z"/>
+  </svg>
+</header>
+
+<main>
+  <!-- 1. VIAJE -->
+  <section class="game" id="viaje">
+    <div class="wrap">
+      <div class="game-head">
+        <p class="eyebrow">El viaje del metal</p>
+        <h2>Del mineral a la pieza en 7 paradas</h2>
+        <p>Cada parada es una parte del trabajo. Pulsa para verla.</p>
+      </div>
+      <div class="steps" role="tablist" aria-label="Paradas" id="steps"></div>
+      <div class="card step-panel" id="step-panel" role="tabpanel" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 2. ALTO HORNO -->
+  <section class="game" id="horno">
+    <div class="wrap">
+      <div class="game-head">
+        <p class="eyebrow">Juego 1 · El alto horno</p>
+        <h2>Explora el horno por dentro</h2>
+        <p>Toca cada zona para ver qué pasa. Abajo, cambia el combustible y mira qué sale por la chimenea.</p>
+      </div>
+      <div class="card furnace-wrap">
+        <svg class="furnace-svg" viewBox="0 0 300 470" role="img" aria-label="Esquema del alto horno con sus zonas">
+          <g class="smoke" id="smoke">
+            <circle cx="150" cy="40" r="14"/><circle cx="135" cy="22" r="10"/><circle cx="165" cy="16" r="12"/><circle cx="150" cy="4" r="8"/>
+          </g>
+          <text class="smoke-label" id="smoke-label" x="190" y="30" fill="currentColor">CO₂</text>
+          <path class="zone" data-z="tragante" d="M118 60 L182 60 L190 110 L110 110 Z" fill="#7a8b74"/>
+          <path class="zone" data-z="cuba" d="M110 110 L190 110 L222 240 L78 240 Z" fill="#b8892e"/>
+          <path class="zone" data-z="vientre" d="M78 240 L222 240 L214 320 L86 320 Z" fill="#d9780b"/>
+          <path class="zone" data-z="toberas" d="M86 320 L214 320 L200 360 L100 360 Z" fill="#e3551b"/>
+          <path class="zone" data-z="crisol" d="M100 360 L200 360 L200 430 L100 430 Z" fill="#c2310f"/>
+          <path class="furnace-shell" d="M118 60 L110 110 L78 240 L86 320 L100 360 L100 430 L200 430 L200 360 L214 320 L222 240 L190 110 L182 60"/>
+          <path d="M60 340 L100 340 M240 340 L200 340" stroke="var(--sea)" stroke-width="5" stroke-linecap="round"/>
+          <text class="zone-txt" x="150" y="90" text-anchor="middle">Tragante</text>
+          <text class="zone-txt" x="150" y="180" text-anchor="middle">Cuba</text>
+          <text class="zone-txt" x="150" y="285" text-anchor="middle">Vientre y etalaje</text>
+          <text class="zone-txt" x="150" y="345" text-anchor="middle">Toberas</text>
+          <text class="zone-txt" x="150" y="400" text-anchor="middle">Crisol</text>
+          <text x="30" y="332" fill="var(--sea)" font-family="var(--mono)" font-size="11">aire</text>
+          <text x="245" y="332" fill="var(--sea)" font-family="var(--mono)" font-size="11">aire</text>
+        </svg>
+        <div class="zone-info">
+          <div id="zone-info" aria-live="polite"></div>
+          <div class="reductor">
+            <p class="eyebrow">¿Con qué reducimos el mineral?</p>
+            <div class="pill-row" role="group" aria-label="Combustible">
+              <button type="button" class="pill hot" id="r-coque" aria-pressed="true">Coque</button>
+              <button type="button" class="pill" id="r-h2" aria-pressed="false">Hidrógeno verde</button>
+            </div>
+            <p class="eq" id="r-eq">Fe₂O₃ + 3CO → 2Fe + 3CO₂</p>
+            <div class="co2bar">
+              <div class="meter top" style="display:flex;justify-content:space-between;font-size:0.88rem;color:var(--muted)"><span>CO₂ por tonelada de acero</span><span class="v" id="r-v">1800 kg</span></div>
+              <div class="track"><i id="r-bar" style="width:100%;background:var(--molten)"></i></div>
+            </div>
+            <p id="r-txt">El oxígeno del mineral se va pegado al carbono: sale CO₂.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. CARBONO -->
+  <section class="game" id="carbono">
+    <div class="wrap">
+      <div class="game-head">
+        <p class="eyebrow">Juego 2 · Aleaciones</p>
+        <h2>Ponle carbono al hierro</h2>
+        <p>Un poquito de carbono cambia muchísimo el acero. Mueve la barra.</p>
+      </div>
+      <div class="card split">
+        <div class="slider-box">
+          <label for="c-range" class="eyebrow">Porcentaje de carbono</label>
+          <div class="c-value"><span id="c-val">0,20</span> %</div>
+          <input type="range" id="c-range" min="0.05" max="4.5" step="0.05" value="0.2">
+          <div class="c-scale"><span>0,05</span><span>0,25</span><span>0,6</span><span>1,4</span><span>2,14</span><span>4,5</span></div>
+          <div class="meter hard"><div class="top"><span>Dureza</span></div><div class="bar"><i id="m-hard"></i></div></div>
+          <div class="meter"><div class="top"><span>Ductilidad (se deja doblar)</span></div><div class="bar"><i id="m-duct"></i></div></div>
+        </div>
+        <div style="display:grid;gap:0.8rem" aria-live="polite">
+          <p class="big-label" id="c-name">Acero bajo en carbono</p>
+          <p id="c-desc"></p>
+          <div class="uses" id="c-uses"></div>
+          <div class="green-tip"><svg><use href="#leaf"/></svg><span id="c-tip"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. TRATAMIENTOS -->
+  <section class="game" id="tratamientos">
+    <div class="wrap">
+      <div class="game-head">
+        <p class="eyebrow">Juego 3 · Tratamientos térmicos</p>
+        <h2>Enfría el acero a tu manera</h2>
+        <p>La misma austenita caliente se convierte en cosas muy distintas según cómo la enfríes.</p>
+      </div>
+      <div class="card split">
+        <div>
+          <div class="micro" id="micro" role="img" aria-label="Microestructura"></div>
+          <p class="micro-cap" id="micro-cap">Vista al microscopio (dibujo)</p>
+        </div>
+        <div style="display:grid;gap:0.9rem">
+          <div class="pill-row" role="group" aria-label="Forma de enfriar" id="cool-btns"></div>
+          <p class="big-label" id="mi-name"></p>
+          <p id="mi-desc"></p>
+          <div class="meter hard"><div class="top"><span>Dureza</span></div><div class="bar"><i id="mi-hard"></i></div></div>
+          <div class="meter"><div class="top"><span>Tenacidad y ductilidad</span></div><div class="bar"><i id="mi-duct"></i></div></div>
+          <div class="green-tip"><svg><use href="#leaf"/></svg><span>Los diagramas TTT dicen cuánto tiempo y a qué temperatura hace falta. Calentar solo lo justo ahorra energía en cada pieza.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. BARCO -->
+  <section class="game" id="barco">
+    <div class="wrap">
+      <div class="game-head">
+        <p class="eyebrow">Juego 4 · Corrosión</p>
+        <h2>Salva el barco del óxido</h2>
+        <p>El agua de mar es un electrolito perfecto: el casco se convierte en una pila y se come a sí mismo. ¿Lo protegemos?</p>
+      </div>
+      <div class="card split">
+        <svg class="ship-svg" viewBox="0 0 400 220" role="img" aria-label="Barco en el mar">
+          <rect class="sky" x="0" y="0" width="400" height="220"/>
+          <rect class="deck" x="150" y="62" width="80" height="34" rx="4"/>
+          <rect class="deck" x="170" y="40" width="28" height="24" rx="3"/>
+          <path class="hull" d="M60 96 L340 96 L310 168 L92 168 Z"/>
+          <g id="rust">
+            <circle class="rust" cx="120" cy="140" r="14" opacity="0"/>
+            <circle class="rust" cx="190" cy="152" r="18" opacity="0"/>
+            <circle class="rust" cx="260" cy="138" r="13" opacity="0"/>
+            <circle class="rust" cx="225" cy="120" r="10" opacity="0"/>
+            <circle class="rust" cx="150" cy="118" r="9" opacity="0"/>
+            <circle class="rust" cx="290" cy="122" r="9" opacity="0"/>
+          </g>
+          <rect class="zinc" id="zinc" x="176" y="164" width="44" height="12" rx="3" opacity="0"/>
+          <path class="water" d="M0 128 C40 120 80 136 120 128 C160 120 200 136 240 128 C280 120 320 136 360 128 C380 124 392 128 400 128 L400 220 L0 220 Z"/>
+          <text x="12" y="210" font-family="var(--mono)" font-size="11" fill="#ffffff">agua de mar = electrolito</text>
+        </svg>
+        <div style="display:grid;gap:0.9rem">
+          <div class="ship-controls">
+            <button type="button" class="pill" id="zinc-btn" aria-pressed="false">Poner ánodo de zinc</button>
+            <button type="button" class="btn" id="time-btn">Pasar 10 años</button>
+            <button type="button" class="btn ghost" id="ship-reset">Barco nuevo</button>
+          </div>
+          <p class="years">Años en el mar: <b id="years">0</b></p>
+          <p class="ship-msg" id="ship-msg" aria-live="polite">Barco recién salido del astillero. Elige si le pones protección y pasa el tiempo.</p>
+          <p class="eq" id="ship-eq">Fe → Fe²⁺ + 2e⁻</p>
+          <div class="green-tip"><svg><use href="#leaf"/></svg><span>Un barco que dura más años es un barco que no hay que volver a fabricar. Proteger el acero también es ahorrar CO₂.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. CALCULADORA -->
+  <section class="game calc-bg" id="calculadora">
+    <div class="wrap">
+      <div class="game-head">
+        <p class="eyebrow">Herramienta</p>
+        <h2>Calculadora de CO₂</h2>
+        <p>Escribe las piezas de un objeto, su material y cuánto pesan. Ves al momento cuánto CO₂ costó fabricarlas y cuánto se ahorraría con la versión verde. Viene con una bici de ejemplo.</p>
+      </div>
+      <div class="card tool">
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th style="width:26%">Pieza</th><th style="width:32%">Material</th><th style="width:15%">Peso</th><th class="num">CO₂</th><th class="num">Ahorro verde</th><th aria-label="Quitar"></th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" id="add">Añadir pieza</button>
+          <button type="button" class="btn ghost" id="reset">Volver a la bici</button>
+        </div>
+        <div class="totals">
+          <div class="total now"><span class="v" id="t-now">0</span><span class="l">kg CO₂ fabricando como hoy</span></div>
+          <div class="total grn"><span class="v" id="t-grn">0</span><span class="l">kg CO₂ con la alternativa verde</span></div>
+        </div>
+        <p class="trees" id="t-msg"></p>
+        <details class="factors">
+          <summary>De dónde salen los números</summary>
+          <div class="table-scroll"><table><thead><tr><th>Material</th><th class="num">kg CO₂ por kg</th><th>Fuente</th></tr></thead><tbody id="factors"></tbody></table></div>
+          <p style="margin-top:0.5rem">Los valores aproximados son órdenes de magnitud típicos y cambian según el país y la energía de cada fábrica.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. FUTURO -->
+  <section class="future" id="futuro">
+    <div class="wrap">
+      <div class="game-head">
+        <p class="eyebrow">Lo que viene</p>
+        <h2>Así se hará el acero verde</h2>
+        <p>Cuatro pasos, y en ninguno hace falta carbón.</p>
+      </div>
+      <div class="flow">
+        <div><p>Electricidad 100 % renovable, eólica o solar.</p></div>
+        <div><p>Electrólisis del agua: se separa en hidrógeno y oxígeno.</p></div>
+        <div><p>El hidrógeno reduce el mineral de hierro. Solo sale vapor de agua.</p></div>
+        <div><p>Horno eléctrico con energía limpia, mezclando chatarra reciclada.</p></div>
+      </div>
+      <div class="fgrid">
+        <article class="fcard"><p class="tag">Ya en planta piloto</p><h3>Hidrógeno verde</h3><p>En Suecia, el proyecto HYBRIT ya ha reducido mineral de hierro con hidrógeno a escala piloto.</p></article>
+        <article class="fcard"><p class="tag">En investigación</p><h3>Electrólisis directa</h3><p>La corriente separa el hierro del oxígeno sin nada de carbono. Falta que los materiales aguanten y que salga barato.</p></article>
+        <article class="fcard"><p class="tag">Disponible hoy</p><h3>Chatarra reciclada</h3><p>Los metales se pueden refundir una y otra vez sin perder sus propiedades. El latón es magnético y se separa fácil para reciclar.</p></article>
+        <article class="fcard"><p class="tag">Empezando</p><h3>Titanio y aluminio reciclados</h3><p>Reciclar evita la parte que más energía gasta: separar el metal de su óxido.</p></article>
+      </div>
+      <div class="spain">
+        <span class="eyebrow">Se hace cerca</span>
+        <span>ArcelorMittal · Asturias</span><span>CELSA · Barcelona</span><span>Megasa · Narón</span><span>Astilleros · Ferrol</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. QUIZ -->
+  <section class="game" id="quiz">
+    <div class="wrap">
+      <div class="game-head">
+        <p class="eyebrow">Para terminar</p>
+        <h2>¿Cuánto has aprendido?</h2>
+        <p>Cinco preguntas rápidas.</p>
+      </div>
+      <div class="card quiz" id="quiz-box" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="sources-sec">
+    <div class="wrap">
+      <h2>Fuentes</h2>
+      <ol class="sources">
+        <li>Trabajo escrito «Metalurgia» del grupo (UDC, 2026).</li>
+        <li>Callister, W. D. y Rethwisch, D. G. (2016). <i>Ciencia e Ingeniería de los Materiales</i>. Reverté.</li>
+        <li>Hybrit Development AB. <a href="https://www.hybritdevelopment.se/en/a-fossil-free-development/direct-reduction-hydrogen-pilotscale/" target="_blank" rel="noopener">Pilot scale direct reduction with hydrogen</a>.</li>
+        <li>UNESID. Informe anual de la industria siderúrgica: descarbonización y reciclaje de chatarra en España.</li>
+        <li>International Aluminium Institute. <a href="https://international-aluminium.org/global-aluminium-industry-greenhouse-gas-emissions-intensity-reduction-continues-with-total-emissions-below-2020-peak" target="_blank" rel="noopener">Greenhouse gas emissions intensity</a>.</li>
+        <li>IperionX. <a href="https://www.businesswire.com/news/home/20230426005405/en" target="_blank" rel="noopener">Life cycle assessment of recycled titanium</a>.</li>
+        <li>Soutullo, R. G. (2015). <a href="https://ingenieromarino.com/corrosion-y-proteccion-catodica/" target="_blank" rel="noopener">Corrosión marina en buques y protección catódica del casco</a>.</li>
+        <li>Mim, J. H. (2025). <a href="https://jhmim.com/es/what-is-passivation/" target="_blank" rel="noopener">¿Qué es la pasivación?</a></li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="eyebrow">Basado en el trabajo y la presentación «Metalurgia»</p>
+    <p>Antía Carpente Campos, Iago De La Torre González, Martín Espiñeira López, Jean Elias Kasbo Haffar, Iria Lagoa Sanjurjo, Ángela Lendoiro Castro y José Ángel Nouche Boado.</p>
+    <p>Grado en Ingeniería en Tecnologías Industriales · Universidade da Coruña</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var fmt = function (n, d) { return n.toLocaleString("es-ES", { maximumFractionDigits: d == null ? 1 : d, minimumFractionDigits: 0 }); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+
+  /* ---------- 1. VIAJE ---------- */
+  var STEPS = [
+    { t: "Extracción", who: "Iago", h: "Sacar el hierro del mineral",
+      p: "El hierro está pegado al oxígeno en minerales como la hematita (Fe₂O₃). Para separarlo hay que «robarle» el oxígeno con monóxido de carbono. Si ΔG es negativo, la reacción va sola.",
+      eq: "Fe₂O₃ + 3CO → 2Fe + 3CO₂",
+      fun: "La electrólisis puede separar el hierro con corriente eléctrica, sin carbono: 2Fe₂O₃ → 4Fe + 3O₂.",
+      tip: "El coque emite muchísimo CO₂. Con hidrógeno verde solo sale vapor de agua." },
+    { t: "Siderurgia", who: "Martín", h: "El alto horno y el convertidor",
+      p: "En el alto horno bajan mineral, coque y caliza mientras sube el gas caliente. Sale arrabio (4–4,5 % de carbono), demasiado frágil. En el convertidor LD se sopla oxígeno a velocidad supersónica para bajar el carbono por debajo del 2,14 % y convertirlo en acero.",
+      eq: "C + ½O₂ → CO",
+      fun: "La temperatura va de unos 200 ºC arriba del horno a más de 1900 ºC en el crisol.",
+      tip: "La industria del acero genera cerca del 8 % del CO₂ humano. Por eso es clave descarbonizarla." },
+    { t: "Aleaciones", who: "Ángela", h: "Mezclar para mejorar",
+      p: "Una aleación mezcla un metal con otro elemento para conseguir lo que necesita el producto. Las ferrosas (acero) son baratas y resistentes. Las no ferrosas (cobre, aluminio, titanio…) son más ligeras y aguantan mejor la corrosión.",
+      eq: "Inoxidable: mínimo 11 % de cromo",
+      fun: "Las aleaciones se empezaron a hacer hace unos 5000 años, en la Edad de Bronce.",
+      tip: "El inoxidable dura mucho sin corroerse, así que se sustituye menos." },
+    { t: "Tratamientos", who: "Jean", h: "Cambiar el metal por dentro",
+      p: "Calentando y enfriando se cambia la estructura del acero. Lento salen perlita o bainita; muy rápido sale martensita, durísima pero frágil, que luego se ablanda un poco con un revenido.",
+      eq: "y = 1 − exp(−k·tⁿ)  (Avrami)",
+      fun: "La bainita se llama así por su forma de agujas vista al microscopio.",
+      tip: "Saber exactamente cuánto calentar evita gastar energía de más." },
+    { t: "Fabricación", who: "Ángel", h: "Dar forma al metal",
+      p: "El metal líquido tiene que fluir bien para llenar el molde. Hay que evitar gases atrapados (poros), la oxidación (se usa argón) y los rechupes por contracción. Luego se forja, lamina o extruye en frío o en caliente.",
+      eq: "Más temperatura → menos viscosidad",
+      fun: "La escoria (2,5 g/cm³) flota sobre el hierro fundido (7,0 g/cm³) y lo protege del aire.",
+      tip: "Cada pieza defectuosa es metal que hay que volver a fundir: menos defectos, menos energía." },
+    { t: "Industria", who: "Iria", h: "Donde trabaja el acero",
+      p: "En la industria química el inoxidable se protege solo con una capa de óxido de cromo (pasivación). El hierro también hace de catalizador para fabricar amoníaco (Haber-Bosch). En los barcos se usan ánodos de sacrificio.",
+      eq: "Cr₂O₃: la capa que sella el acero",
+      fun: "En los astilleros de Ferrol se protegen los cascos con bloques de zinc que se oxidan en lugar del acero.",
+      tip: "Evitar la corrosión es la forma más barata de no tener que fabricar otra pieza." },
+    { t: "Calidad", who: "Antía", h: "Comprobar que todo está bien",
+      p: "Se pule el acero y se ataca con Nital (ácido nítrico en etanol), que se come antes los bordes de grano y deja ver la estructura al microscopio. Las cámaras de niebla salina simulan años de mar en pocos días.",
+      eq: "Fe + 2HNO₃ → Fe(NO₃)₂ + H₂",
+      fun: "Los bordes de grano se atacan antes porque tienen más energía que el resto del cristal.",
+      tip: "Detectar defectos en el laboratorio evita que lleguen piezas malas a un barco o un edificio." }
+  ];
+  var stepsEl = $("steps"), panel = $("step-panel");
+  STEPS.forEach(function (s, i) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "step-btn"; b.id = "step-" + i;
+    b.setAttribute("role", "tab");
+    b.innerHTML = "<small>Parada " + (i + 1) + "</small><b>" + s.t + "</b>";
+    b.addEventListener("click", function () { showStep(i); });
+    stepsEl.appendChild(b);
+  });
+  function showStep(i) {
+    var s = STEPS[i];
+    stepsEl.querySelectorAll(".step-btn").forEach(function (b, j) { b.setAttribute("aria-selected", String(i === j)); });
+    panel.innerHTML =
+      '<p class="who">Parte de ' + s.who + "</p>" +
+      "<h3>" + s.h + "</h3><p>" + s.p + '</p><p class="eq">' + s.eq + "</p>" +
+      '<div class="fun"><b>¿Sabías que…?</b><span>' + s.fun + "</span></div>" +
+      '<div class="green-tip"><svg><use href="#leaf"/></svg><span>' + s.tip + "</span></div>";
+  }
+  showStep(0);
+
+  /* ---------- 2. ALTO HORNO ---------- */
+  var ZONES = {
+    tragante: { n: "Tragante", t: "≈ 200 ºC", d: "Por arriba entran el mineral de hierro, el coque y la caliza. Van bajando por gravedad mientras el gas caliente sube.", eqs: [] },
+    cuba: { n: "Cuba · reducción indirecta", t: "400–900 ºC", d: "El monóxido de carbono le quita el oxígeno al mineral poco a poco, en tres pasos.", eqs: ["3Fe₂O₃ + CO → 2Fe₃O₄ + CO₂", "Fe₃O₄ + CO → 3FeO + CO₂", "FeO + CO → Fe + CO₂"] },
+    vientre: { n: "Vientre y etalaje · reducción directa", t: "> 1000 ºC", d: "Aquí el propio carbono del coque reduce lo que queda. El CO₂ vuelve a convertirse en CO al tocar el coque incandescente (Boudouard).", eqs: ["FeO + C → Fe + CO", "C + CO₂ → 2CO"] },
+    toberas: { n: "Toberas", t: "Entrada de aire", d: "Se inyecta aire caliente que quema el coque. De aquí sube la corriente de gas reductor.", eqs: [] },
+    crisol: { n: "Crisol", t: "> 1900 ºC", d: "Se acumula el arrabio fundido (4–4,5 % de carbono). La escoria, más ligera (2,5 frente a 7,0 g/cm³), flota encima y atrapa azufre y fósforo.", eqs: ["CaCO₃ → CaO + CO₂", "CaO + SiO₂ → CaSiO₃"] }
+  };
+  var zoneEls = document.querySelectorAll(".zone");
+  function showZone(z) {
+    zoneEls.forEach(function (el) { el.classList.toggle("on", el.dataset.z === z); });
+    var Z = ZONES[z];
+    $("zone-info").innerHTML =
+      '<p class="eyebrow">' + Z.n + '</p><p class="temp">' + Z.t + "</p><p>" + Z.d + "</p>" +
+      (Z.eqs.length ? '<div class="eq-list">' + Z.eqs.map(function (e) { return '<span class="eq">' + e + "</span>"; }).join("") + "</div>" : "");
+  }
+  zoneEls.forEach(function (el) {
+    el.setAttribute("tabindex", "0"); el.setAttribute("role", "button");
+    el.setAttribute("aria-label", ZONES[el.dataset.z].n);
+    el.addEventListener("click", function () { showZone(el.dataset.z); });
+    el.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showZone(el.dataset.z); } });
+  });
+  showZone("cuba");
+
+  var smoke = $("smoke"), smokeLabel = $("smoke-label");
+  function setReductor(r) {
+    var h2 = r === "h2";
+    $("r-coque").setAttribute("aria-pressed", String(!h2));
+    $("r-h2").setAttribute("aria-pressed", String(h2));
+    $("r-eq").textContent = h2 ? "Fe₂O₃ + 3H₂ → 2Fe + 3H₂O" : "Fe₂O₃ + 3CO → 2Fe + 3CO₂";
+    $("r-v").textContent = h2 ? "< 100 kg" : "1800 kg";
+    var bar = $("r-bar");
+    bar.style.width = h2 ? (100 / 1800 * 100) + "%" : "100%";
+    bar.style.background = h2 ? "var(--leaf)" : "var(--molten)";
+    $("r-txt").textContent = h2
+      ? "El oxígeno se va con el hidrógeno: solo sale vapor de agua. Limpio de verdad si el H₂ viene de energía renovable."
+      : "El oxígeno del mineral se va pegado al carbono: sale CO₂.";
+    smoke.querySelectorAll("circle").forEach(function (c) { c.style.fill = h2 ? "#cfe9f5" : "#5b5f61"; });
+    smokeLabel.textContent = h2 ? "H₂O" : "CO₂";
+    smokeLabel.style.fill = h2 ? "var(--sea)" : "var(--muted)";
+  }
+  $("r-coque").addEventListener("click", function () { setReductor("coque"); });
+  $("r-h2").addEventListener("click", function () { setReductor("h2"); });
+  setReductor("coque");
+
+  /* humo animado */
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduce) {
+    var circles = smoke.querySelectorAll("circle"), t0 = performance.now();
+    var base = [[150, 40, 14], [135, 22, 10], [165, 16, 12], [150, 4, 8]];
+    (function puff(now) {
+      var t = (now - t0) / 1000;
+      circles.forEach(function (c, i) {
+        var ph = (t * 0.5 + i * 0.25) % 1;
+        c.setAttribute("cy", 52 - ph * 50);
+        c.setAttribute("cx", base[i][0] + Math.sin(t + i) * 6);
+        c.setAttribute("r", base[i][2] * (0.6 + ph * 0.7));
+        c.setAttribute("opacity", (1 - ph) * 0.9);
+      });
+      requestAnimationFrame(puff);
+    })(t0);
+  }
+
+  /* ---------- 3. CARBONO ---------- */
+  function carbon(v) {
+    if (v < 0.25) return { n: "Acero bajo en carbono", d: "Muy dúctil y tenaz, fácil de mecanizar y de soldar. Y barato.", u: ["Carrocerías de coches", "Vigas", "Tuberías", "Edificios"], tip: "Es el acero más fácil de reciclar en chatarra para fabricar acero nuevo." };
+    if (v < 0.6) return { n: "Acero medio en carbono", d: "Tras el tratamiento térmico es más resistente que el bajo, aunque menos dúctil. Aguanta muy bien el desgaste.", u: ["Ruedas y raíles de tren", "Engranajes", "Cigüeñales"], tip: "Resistir el desgaste significa piezas que duran más y se cambian menos." };
+    if (v <= 1.4) return { n: "Acero alto en carbono", d: "El más duro y el menos dúctil. Casi siempre se usa templado y revenido. Con cromo, vanadio o tungsteno forma carburos durísimos.", u: ["Herramientas de corte", "Muelles", "Hilos de alta resistencia"], tip: "Una herramienta dura corta más tiempo antes de tirarse." };
+    if (v < 2.14) return { n: "Acero muy rico en carbono", d: "Fuera de lo habitual: el acero llega como mucho al 2,14 % de carbono.", u: ["Usos muy especiales"], tip: "Ajustar bien el carbono en el convertidor evita fabricar lotes que no sirven." };
+    return { n: "Ya no es acero: es arrabio", d: "Por encima del 2,14 % hay demasiado carbono. Así sale del alto horno (4–4,5 %): frágil. Hay que pasarlo por el convertidor.", u: ["Hay que soplarle oxígeno"], tip: "El convertidor LD quema ese carbono sobrante soplando oxígeno puro.", warn: true };
+  }
+  function setCarbon() {
+    var v = parseFloat($("c-range").value);
+    $("c-val").textContent = v.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    var c = carbon(v), k = Math.min(v / 1.4, 1);
+    $("c-name").textContent = c.n;
+    $("c-name").className = "big-label" + (c.warn ? " warn" : "");
+    $("c-desc").textContent = c.d;
+    $("c-uses").innerHTML = c.u.map(function (u) { return "<span>" + u + "</span>"; }).join("");
+    $("c-tip").textContent = c.tip;
+    $("m-hard").style.width = (v > 2.14 ? 100 : 15 + k * 85) + "%";
+    $("m-duct").style.width = (v > 2.14 ? 4 : 95 - k * 80) + "%";
+  }
+  $("c-range").addEventListener("input", setCarbon);
+  setCarbon();
+
+  /* ---------- 4. MICROESTRUCTURAS ---------- */
+  var MICRO = [
+    { b: "Muy lento", n: "Perlita gruesa", d: "Por encima de 600 ºC los átomos se mueven mucho y forman láminas anchas alternas de ferrita y cementita.", h: 35, du: 65,
+      bg: "repeating-linear-gradient(35deg, #c9b38c 0 10px, #6e5a3a 10px 16px)" },
+    { b: "Un poco más rápido", n: "Perlita fina", d: "Con más subenfriamiento las láminas salen más finas, y el acero es más duro.", h: 50, du: 50,
+      bg: "repeating-linear-gradient(35deg, #c9b38c 0 4px, #6e5a3a 4px 6px)" },
+    { b: "A 215–540 ºC", n: "Bainita", d: "Pasada la «nariz» del diagrama TTT aparecen agujas finas de carburos. Muy tenaz.", h: 65, du: 55,
+      bg: "repeating-linear-gradient(60deg, transparent 0 9px, #5b4a30 9px 11px), repeating-linear-gradient(-30deg, transparent 0 13px, #5b4a30 13px 15px), #cdb990" },
+    { b: "Temple rápido", n: "Martensita", d: "Tan rápido que el carbono no puede moverse: estructura tetragonal centrada en el cuerpo. La más dura de todas, pero frágil.", h: 98, du: 10,
+      bg: "repeating-linear-gradient(45deg, transparent 0 6px, #3e3a3a 6px 8px), repeating-linear-gradient(-45deg, transparent 0 6px, #3e3a3a 6px 8px), #9aa0a6" },
+    { b: "Temple + revenido", n: "Martensita revenida", d: "Recalentar un poco libera tensiones y precipita carburos finos: el equilibrio entre dureza y tenacidad.", h: 78, du: 45,
+      bg: "radial-gradient(circle at 3px 3px, #3e3a3a 1.5px, transparent 2px) 0 0/9px 9px, repeating-linear-gradient(45deg, transparent 0 10px, rgba(62,58,58,.35) 10px 12px), #b3b8bc" },
+    { b: "Mucho rato caliente", n: "Esferoidita", d: "Si se deja mucho tiempo a alta temperatura, la cementita se redondea en bolitas: máxima ductilidad.", h: 20, du: 95,
+      bg: "radial-gradient(circle at 6px 6px, #6e5a3a 3px, transparent 3.5px) 0 0/16px 16px, #d8c7a3" }
+  ];
+  var coolBtns = $("cool-btns");
+  MICRO.forEach(function (m, i) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "pill"; b.textContent = m.b; b.id = "cool-" + i;
+    b.addEventListener("click", function () { setMicro(i); });
+    coolBtns.appendChild(b);
+  });
+  function setMicro(i) {
+    var m = MICRO[i];
+    coolBtns.querySelectorAll(".pill").forEach(function (b, j) { b.setAttribute("aria-pressed", String(i === j)); });
+    $("micro").style.background = m.bg;
+    $("micro").setAttribute("aria-label", "Dibujo de " + m.n);
+    $("mi-name").textContent = m.n;
+    $("mi-desc").textContent = m.d;
+    $("mi-hard").style.width = m.h + "%";
+    $("mi-duct").style.width = m.du + "%";
+  }
+  setMicro(3);
+
+  /* ---------- 5. BARCO ---------- */
+  var years = 0, zincOn = false, zincLeft = 1;
+  var rustEls = document.querySelectorAll("#rust .rust");
+  function drawShip() {
+    $("years").textContent = years;
+    var zinc = $("zinc");
+    zinc.setAttribute("opacity", zincOn ? 1 : 0);
+    var w = 44 * Math.max(zincLeft, 0.08);
+    zinc.setAttribute("width", w); zinc.setAttribute("x", 198 - w / 2);
+    var rustLevel = 0;
+    if (!zincOn) rustLevel = Math.min(years / 30, 1);
+    rustEls.forEach(function (r, i) {
+      var start = i / rustEls.length;
+      r.setAttribute("opacity", Math.max(0, Math.min(1, (rustLevel - start) * 2.5)) * 0.9);
+    });
+  }
+  function shipMessage() {
+    var msg, eq;
+    if (years === 0) {
+      msg = zincOn ? "Ánodo de zinc puesto. Ahora pasa el tiempo." : "Barco recién salido del astillero. Elige si le pones protección y pasa el tiempo.";
+      eq = zincOn ? "Zn → Zn²⁺ + 2e⁻" : "Fe → Fe²⁺ + 2e⁻";
+    } else if (zincOn) {
+      msg = zincLeft > 0.1 ? "El zinc se está oxidando en lugar del acero. El casco hace de cátodo y está a salvo." : "El zinc casi se ha gastado: toca cambiarlo por uno nuevo. El casco sigue impecable.";
+      eq = "Zn → Zn²⁺ + 2e⁻   ·   ½O₂ + H₂O + 2e⁻ → 2OH⁻";
+    } else {
+      msg = years >= 30 ? "El casco está lleno de óxido. Habría que repararlo o fabricar otro barco." : "Sin protección, el hierro cede electrones y se oxida. Aparecen las primeras manchas.";
+      eq = "Fe → Fe²⁺ + 2e⁻   ·   Fe²⁺ + 2OH⁻ → Fe(OH)₂";
+    }
+    $("ship-msg").textContent = msg; $("ship-eq").textContent = eq;
+  }
+  $("zinc-btn").addEventListener("click", function () {
+    zincOn = !zincOn;
+    $("zinc-btn").setAttribute("aria-pressed", String(zincOn));
+    $("zinc-btn").textContent = zincOn ? "Quitar ánodo de zinc" : "Poner ánodo de zinc";
+    drawShip(); shipMessage();
+  });
+  $("time-btn").addEventListener("click", function () {
+    years += 10;
+    if (zincOn) zincLeft = Math.max(0, zincLeft - 0.34);
+    drawShip(); shipMessage();
+    if (years >= 30) $("time-btn").disabled = true;
+  });
+  $("ship-reset").addEventListener("click", function () {
+    years = 0; zincLeft = 1; $("time-btn").disabled = false; drawShip(); shipMessage();
+  });
+  drawShip();
+
+  /* ---------- 6. CALCULADORA ---------- */
+  var M = {
+    acero_bf:  { n: "Acero · alto horno", f: 1.8, g: "acero_h2", s: "Trabajo del grupo (1800 kg/t)" },
+    acero_h2:  { n: "Acero · hidrógeno verde", f: 0.1, g: null, s: "Trabajo del grupo (<100 kg/t, se toma el máximo)" },
+    acero_eaf: { n: "Acero · chatarra en horno eléctrico", f: 0.7, g: "acero_h2", s: "Aproximado" },
+    inox:      { n: "Acero inoxidable", f: 1.8, g: "acero_h2", s: "Aproximado, como el acero de alto horno" },
+    al_prim:   { n: "Aluminio primario", f: 14.8, g: "al_rec", s: "International Aluminium Institute, 2023" },
+    al_rec:    { n: "Aluminio reciclado", f: 0.6, g: null, s: "Aproximado" },
+    cobre:     { n: "Cobre (latón, bronce)", f: 4, g: null, s: "Aproximado" },
+    ti_kroll:  { n: "Titanio · proceso Kroll", f: 39, g: "ti_rec", s: "Estimado: el reciclado emite un 80 % menos (IperionX)" },
+    ti_rec:    { n: "Titanio reciclado", f: 7.8, g: null, s: "IperionX, 2023" }
+  };
+  var EX = [
+    { name: "Cuadro", mat: "al_prim", kg: 1.6 },
+    { name: "Horquilla", mat: "acero_bf", kg: 0.9 },
+    { name: "Cadena y piñones", mat: "acero_bf", kg: 0.8 },
+    { name: "Cables de freno", mat: "inox", kg: 0.15 },
+    { name: "Timbre", mat: "cobre", kg: 0.08 }
+  ];
+  var uid = 0, rows = [];
+  function loadEx() { rows = EX.map(function (r) { return { id: ++uid, name: r.name, mat: r.mat, kg: r.kg }; }); }
+  loadEx();
+  var gf = function (k) { return M[k].g ? M[M[k].g].f : M[k].f; };
+  var tbody = $("rows");
+  function opts(sel) { return Object.keys(M).map(function (k) { return '<option value="' + k + '"' + (k === sel ? " selected" : "") + ">" + M[k].n + "</option>"; }).join(""); }
+  function renderRows() {
+    tbody.innerHTML = rows.map(function (r) {
+      return '<tr data-id="' + r.id + '"><td><input id="n-' + r.id + '" data-k="name" value="' + esc(r.name) + '" aria-label="Nombre de la pieza"></td>' +
+        '<td><select id="m-' + r.id + '" data-k="mat" aria-label="Material">' + opts(r.mat) + "</select></td>" +
+        '<td><div class="kg"><input id="w-' + r.id + '" data-k="kg" type="number" min="0" step="0.05" value="' + r.kg + '" aria-label="Peso en kg"><span>kg</span></div></td>' +
+        '<td class="num" id="c-' + r.id + '"></td><td class="num saving" id="s-' + r.id + '"></td>' +
+        '<td><button type="button" class="del" aria-label="Quitar ' + esc(r.name) + '">×</button></td></tr>';
+    }).join("");
+    compute();
+  }
+  function compute() {
+    var tn = 0, tg = 0, top = null;
+    rows.forEach(function (r) {
+      var kg = Math.max(0, parseFloat(r.kg) || 0), now = kg * M[r.mat].f, grn = kg * gf(r.mat);
+      tn += now; tg += grn;
+      if (!top || now > top.now) top = { r: r, now: now };
+      var c = $("c-" + r.id), s = $("s-" + r.id);
+      if (c) c.textContent = fmt(now, 2) + " kg";
+      if (s) s.textContent = now - grn > 0.0005 ? "−" + fmt(now - grn, 2) + " kg" : "—";
+    });
+    $("t-now").textContent = fmt(tn); $("t-grn").textContent = fmt(tg);
+    if (tn > 0) {
+      var pct = Math.round((1 - tg / tn) * 100);
+      $("t-msg").innerHTML = "Con materiales verdes ahorrarías un <b>" + pct + " %</b> del CO₂. La pieza que más contamina es <b>" + esc(top.r.name) + "</b> (" + M[top.r.mat].n.toLowerCase() + ").";
+    } else {
+      $("t-msg").textContent = "Añade una pieza para empezar.";
+    }
+  }
+  tbody.addEventListener("input", function (e) {
+    var tr = e.target.closest("tr"); if (!tr) return;
+    var r = rows.find(function (x) { return x.id === +tr.dataset.id; }); if (!r) return;
+    r[e.target.dataset.k] = e.target.value; compute();
+  });
+  tbody.addEventListener("change", function (e) {
+    if (e.target.tagName !== "SELECT") return;
+    var r = rows.find(function (x) { return x.id === +e.target.closest("tr").dataset.id; });
+    r.mat = e.target.value; compute();
+  });
+  tbody.addEventListener("click", function (e) {
+    if (!e.target.classList.contains("del")) return;
+    var id = +e.target.closest("tr").dataset.id;
+    rows = rows.filter(function (x) { return x.id !== id; }); renderRows();
+  });
+  $("add").addEventListener("click", function () {
+    var r = { id: ++uid, name: "Pieza " + (rows.length + 1), mat: "acero_bf", kg: 1 };
+    rows.push(r); renderRows();
+    var n = $("n-" + r.id); if (n) { n.focus(); n.select(); }
+  });
+  $("reset").addEventListener("click", function () { loadEx(); renderRows(); });
+  $("factors").innerHTML = Object.keys(M).map(function (k) { return "<tr><td>" + M[k].n + '</td><td class="num">' + fmt(M[k].f, 2) + "</td><td>" + M[k].s + "</td></tr>"; }).join("");
+  renderRows();
+
+  /* ---------- 8. QUIZ ---------- */
+  var Q = [
+    { q: "¿Qué sale por la chimenea si reducimos el mineral con hidrógeno verde?", o: ["CO₂", "Vapor de agua", "Humo negro"], a: 1, w: "Fe₂O₃ + 3H₂ → 2Fe + 3H₂O: el oxígeno se va con el hidrógeno." },
+    { q: "¿Qué parte del CO₂ que emitimos los humanos viene del acero?", o: ["Un 1 %", "Un 8 %", "Un 30 %"], a: 1, w: "Cerca del 8 %. Por eso es tan importante el acero verde." },
+    { q: "¿Qué metal se pega al casco de un barco para que se oxide él y no el acero?", o: ["Oro", "Cobre", "Zinc"], a: 2, w: "El zinc tiene menor potencial de reducción: se sacrifica como ánodo." },
+    { q: "¿Cuánto cromo necesita como mínimo el acero inoxidable?", o: ["1 %", "11 %", "50 %"], a: 1, w: "Con un 11 % de cromo se forma la capa protectora de Cr₂O₃." },
+    { q: "¿Por qué la escoria flota sobre el hierro fundido?", o: ["Es menos densa", "Está más caliente", "Es magnética"], a: 0, w: "2,5 g/cm³ frente a 7,0 g/cm³ del hierro." }
+  ];
+  var qi = 0, res = [];
+  var qbox = $("quiz-box");
+  function renderQ() {
+    var prog = '<div class="q-prog">' + Q.map(function (_, i) { return "<i class=\"" + (res[i] === true ? "ok" : res[i] === false ? "ko" : i === qi ? "cur" : "") + "\"></i>"; }).join("") + "</div>";
+    if (qi >= Q.length) {
+      var ok = res.filter(Boolean).length;
+      var msg = ok === 5 ? "¡Perfecto! Ya sabes más de acero verde que mucha gente." : ok >= 3 ? "¡Muy bien! Casi lo tienes todo." : "Repasa los juegos de arriba y vuelve a intentarlo.";
+      qbox.innerHTML = prog + '<p class="q-score">' + ok + " / 5</p><p>" + msg + '</p><div><button type="button" class="btn" id="q-again">Jugar otra vez</button></div>';
+      $("q-again").addEventListener("click", function () { qi = 0; res = []; renderQ(); });
+      return;
+    }
+    var q = Q[qi];
+    qbox.innerHTML = prog + '<p class="eyebrow">Pregunta ' + (qi + 1) + ' de 5</p><p class="q-text">' + q.q + '</p><div class="q-opts">' +
+      q.o.map(function (o, i) { return '<button type="button" class="q-opt" data-i="' + i + '">' + o + "</button>"; }).join("") +
+      '</div><p class="q-why" id="q-why"></p><div><button type="button" class="btn" id="q-next" hidden>Siguiente</button></div>';
+    qbox.querySelectorAll(".q-opt").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var i = +b.dataset.i, right = i === q.a;
+        res[qi] = right;
+        qbox.querySelectorAll(".q-opt").forEach(function (x, j) {
+          x.disabled = true;
+          if (j === q.a) x.classList.add("right"); else if (j === i) x.classList.add("wrong");
+        });
+        $("q-why").textContent = (right ? "¡Correcto! " : "Casi. ") + q.w;
+        var nx = $("q-next"); nx.hidden = false; nx.textContent = qi === Q.length - 1 ? "Ver resultado" : "Siguiente"; nx.focus();
+        nx.addEventListener("click", function () { qi++; renderQ(); });
+        qbox.querySelector(".q-prog").children[qi].className = right ? "ok" : "ko";
+      });
+    });
+  }
+  renderQ();
+
+  /* ---------- Hojas en la portada ---------- */
+  var cv = $("leaves"), ctx = cv.getContext && cv.getContext("2d");
+  if (!ctx) return;
+  var W, H, leaves = [];
+  function size() { var d = window.devicePixelRatio || 1; W = cv.clientWidth; H = cv.clientHeight; cv.width = W * d; cv.height = H * d; ctx.setTransform(d, 0, 0, d, 0, 0); }
+  function make() {
+    leaves = [];
+    var n = Math.round(Math.min(28, W / 38));
+    for (var i = 0; i < n; i++) leaves.push({
+      x: Math.random() * W, y: Math.random() * H, s: 8 + Math.random() * 18, a: Math.random() * 6.28,
+      va: (Math.random() - 0.5) * 0.01, vy: -0.15 - Math.random() * 0.3, vx: (Math.random() - 0.5) * 0.25,
+      c: Math.random() < 0.15 ? "rgba(246,165,74," : "rgba(143,224,169,", o: 0.12 + Math.random() * 0.22
+    });
+  }
+  function leaf(l) {
+    ctx.save(); ctx.translate(l.x, l.y); ctx.rotate(l.a); ctx.beginPath();
+    ctx.moveTo(0, -l.s);
+    ctx.bezierCurveTo(l.s * 0.7, -l.s * 0.4, l.s * 0.7, l.s * 0.4, 0, l.s);
+    ctx.bezierCurveTo(-l.s * 0.7, l.s * 0.4, -l.s * 0.7, -l.s * 0.4, 0, -l.s);
+    ctx.fillStyle = l.c + l.o + ")"; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(0, -l.s * 0.85); ctx.lineTo(0, l.s * 0.85);
+    ctx.strokeStyle = l.c + l.o * 0.9 + ")"; ctx.lineWidth = 1; ctx.stroke(); ctx.restore();
+  }
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    leaves.forEach(function (l) {
+      if (!reduce) { l.y += l.vy; l.x += l.vx + Math.sin(l.y / 60) * 0.2; l.a += l.va; if (l.y < -30) { l.y = H + 30; l.x = Math.random() * W; } }
+      leaf(l);
+    });
+    if (!reduce) requestAnimationFrame(frame);
+  }
+  size(); make(); frame();
+  window.addEventListener("resize", function () { size(); make(); if (reduce) frame(); });
+})();
+</script>
+
+</body>
+</html>
