@@ -1,8 +1,8 @@
-# Acero Verde 🌿
+metalurgia-udc-iti-2026# Acero Verde 🌿
 
 **Metales para un planeta habitable**: una web interactiva sobre metalurgia y medio ambiente.
 
-👉 **Web:** https://iago573.github.io/acero-verde/
+👉 **Web:** https://metalurgia-udc-iti-2026.github.io/acero-verde/
 
 ## Autores
 
