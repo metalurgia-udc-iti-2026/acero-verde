@@ -1,4 +1,4 @@
-metalurgia-udc-iti-2026# Acero Verde 🌿
+# Acero Verde 🌿
 
 **Metales para un planeta habitable**: una web interactiva sobre metalurgia y medio ambiente.
 
